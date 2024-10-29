@@ -4,13 +4,7 @@ const app = express()
 require("dotenv").config()
 
 // MongoDB 연결
-mongoose
-  .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log("MongoDB 연결 성공"))
-  .catch((err) => console.log(err))
+mongoose.connect(process.env.MONGO_URI)
 
 app.use(express.json())
 
