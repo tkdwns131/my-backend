@@ -1,21 +1,17 @@
-// backend/index.js
 const express = require("express")
 const mongoose = require("mongoose")
-const dotenv = require("dotenv")
+const cors = require("cors") // CORS 추가
 const app = express()
-
-dotenv.config()
-
+require("dotenv").config()
+app.use(cors()) // CORS 미들웨어 적용
 // MongoDB 연결
-mongoose
-  .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.error(err))
+mongoose.connect(process.env.MONGO_URI)
 
 app.use(express.json())
+
+app.get("/", (req, res) => {
+  res.send("백엔드 서버 동작 중")
+})
 
 // backend/index.js
 const groupRoutes = require("./routes/group")
@@ -24,8 +20,7 @@ const matchRoutes = require("./routes/match")
 app.use("/api/group", groupRoutes)
 app.use("/api/match", matchRoutes)
 
-// 서버 실행
 const PORT = process.env.PORT || 5000
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`)
+  console.log(`서버가 포트 ${PORT}에서 실행 중입니다.`)
 })
