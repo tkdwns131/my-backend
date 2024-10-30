@@ -1,13 +1,25 @@
 const express = require("express")
 const mongoose = require("mongoose")
 const cors = require("cors") // CORS 추가
+const User = require("./models/User")
 const app = express()
 require("dotenv").config()
-app.use(cors()) // CORS 미들웨어 적용
+const corsOptions = {
+  origin: "https://my-next-app-five-zeta.vercel.app/", // 실제 프론트엔드 도메인으로 설정
+  optionsSuccessStatus: 200,
+}
+
+app.use(cors(corsOptions))
 
 app.use(express.json())
 // MongoDB 연결
-mongoose.connect(process.env.MONGO_URI)
+mongoose
+  .connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log("MongoDB 연결 성공"))
+  .catch((err) => console.error("MongoDB 연결 오류:", err))
 
 // 사용자 스키마 및 모델 정의
 const userSchema = new mongoose.Schema({
@@ -17,9 +29,14 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model("User", userSchema)
 
+app.use((req, res, next) => {
+  console.log(`Request URL: ${req.url}, Method: ${req.method}`)
+  next()
+})
+
 // 사용자 추가 API
-app.get("/addUser/:name", async (req, res) => {
-  const { name } = req.params.name
+app.get("/addUser", async (req, res) => {
+  const { name } = req.body
   const user = new User({ name })
   await user.save()
   res.status(201).send(user)
@@ -55,7 +72,7 @@ app.post("/matchUser", async (req, res) => {
 })
 
 // 서버 시작
-const PORT = process.env.PORT || 3000
+const PORT = process.env.PORT || 10000
 app.listen(PORT, () => {
   console.log(`서버가 포트 ${PORT}에서 실행 중입니다.`)
 })
