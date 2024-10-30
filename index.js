@@ -4,12 +4,8 @@ const cors = require("cors") // CORS 추가
 const User = require("./models/User")
 const app = express()
 require("dotenv").config()
-const corsOptions = {
-  origin: "https://my-next-app-five-zeta.vercel.app/", // 실제 프론트엔드 도메인으로 설정
-  optionsSuccessStatus: 200,
-}
 
-app.use(cors(corsOptions))
+app.use(cors({ origin: "*" }))
 
 app.use(express.json())
 // MongoDB 연결
@@ -44,28 +40,50 @@ app.post("/addUser", async (req, res) => {
 app.post("/matchUser", async (req, res) => {
   const { selectedName } = req.body
 
-  const allUsers = await User.find({ matched: false })
-  const selectedUser = allUsers.find((user) => user.name === selectedName)
+  try {
+    // 매칭되지 않은 사용자 목록 가져오기
+    const allUsers = await User.find({ matched: false })
 
-  if (selectedUser) {
-    const otherUsers = allUsers.filter((user) => user.name !== selectedName)
-    if (otherUsers.length > 0) {
-      const randomIndex = Math.floor(Math.random() * otherUsers.length)
-      const matchedUser = otherUsers[randomIndex]
+    // 선택된 사용자 찾기
+    const selectedUser = allUsers.find((user) => user.name === selectedName)
 
-      // 매칭 완료 처리
-      selectedUser.matched = true
-      matchedUser.matched = true
-
-      await selectedUser.save()
-      await matchedUser.save()
-
-      res.send({ matched: matchedUser.name })
-    } else {
-      res.status(404).send("No other users available to match.")
+    if (!selectedUser) {
+      return res.status(404).json({
+        message: "선택한 사용자가 존재하지 않거나 이미 매칭되었습니다.",
+      })
     }
-  } else {
-    res.status(404).send("Selected user not found or already matched.")
+
+    // 선택된 사용자 제외한 나머지 사용자 중 매칭 가능한 사용자 선택
+    const otherUsers = allUsers.filter(
+      (user) => user._id.toString() !== selectedUser._id.toString()
+    )
+    if (otherUsers.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "매칭 가능한 다른 사용자가 없습니다." })
+    }
+
+    // 무작위로 다른 사용자 선택
+    const randomIndex = Math.floor(Math.random() * otherUsers.length)
+    const matchedUser = otherUsers[randomIndex]
+
+    // 매칭 상태 및 상대방 ID 업데이트
+    selectedUser.matched = true
+    selectedUser.matchedUserId = matchedUser._id
+    matchedUser.matched = true
+    matchedUser.matchedUserId = selectedUser._id
+
+    await selectedUser.save()
+    await matchedUser.save()
+
+    res.status(200).json({
+      message: "매칭 성공",
+      selectedUser: selectedUser.name,
+      matchedUser: matchedUser.name,
+    })
+  } catch (error) {
+    console.error("매칭 오류:", error)
+    res.status(500).json({ message: "매칭 중 오류가 발생했습니다.", error })
   }
 })
 

@@ -9,12 +9,17 @@
 
 // module.exports = mongoose.model("User", userSchema)
 
-// models/User.js
+// backend/models/User.js
 const mongoose = require("mongoose")
 
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
-  matched: { type: Boolean, default: false },
+  matched: { type: Boolean, default: false }, // 사용자가 매칭되었는지 여부
+  matchedUserId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    default: null,
+  }, // 매칭된 사용자 ID
 })
 
 module.exports = mongoose.model("User", userSchema)
