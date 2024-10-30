@@ -18,8 +18,8 @@ const userSchema = new mongoose.Schema({
 const User = mongoose.model("User", userSchema)
 
 // 사용자 추가 API
-app.post("/addUser", async (req, res) => {
-  const { name } = req.body
+app.get("/addUser/:name", async (req, res) => {
+  const { name } = req.params.name
   const user = new User({ name })
   await user.save()
   res.status(201).send(user)
