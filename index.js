@@ -27,8 +27,6 @@ const userSchema = new mongoose.Schema({
   matched: { type: Boolean, default: false },
 })
 
-const User = mongoose.model("User", userSchema)
-
 app.use((req, res, next) => {
   console.log(`Request URL: ${req.url}, Method: ${req.method}`)
   next()
