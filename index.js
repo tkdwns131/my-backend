@@ -55,5 +55,5 @@ app.post("/matchUser", async (req, res) => {
 })
 
 // 서버 시작
-const PORT = 5000
+const PORT = 10000
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
