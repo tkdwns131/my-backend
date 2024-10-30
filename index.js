@@ -35,7 +35,7 @@ app.use((req, res, next) => {
 })
 
 // 사용자 추가 API
-app.get("/addUser", async (req, res) => {
+app.post("/addUser", async (req, res) => {
   const { name } = req.body
   const user = new User({ name })
   await user.save()
